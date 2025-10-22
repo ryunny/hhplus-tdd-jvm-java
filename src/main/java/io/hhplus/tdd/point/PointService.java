@@ -2,9 +2,11 @@ package io.hhplus.tdd.point;
 
 import io.hhplus.tdd.database.PointHistoryTable;
 import io.hhplus.tdd.database.UserPointTable;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class PointService {
     private final UserPointTable userPointTable;
     private final PointHistoryTable pointHistoryTable;
@@ -28,19 +30,26 @@ public class PointService {
 
     //특정 유저의 포인트를 충전하는 기능
     public UserPoint chargePoint(long id, long amount) {
+        //사용자 금액 조회
+        UserPoint currentPoint = userPointTable.selectById(id);
+        //포인트 최대값 검증
+        long newPoint = amount+currentPoint.point();
         //사용자 금액 update
-        UserPoint user = userPointTable.insertOrUpdate(id,amount);
+        UserPoint userPoint = userPointTable.insertOrUpdate(id,newPoint);
         //사용자 기록 insert
-        pointHistoryTable.insert(id, amount, TransactionType.CHARGE, user.updateMillis());
+        pointHistoryTable.insert(id, amount, TransactionType.CHARGE, userPoint.updateMillis());
         //사용자 포인트 정보 반환
-        return userPointTable.selectById(id);
+        return userPoint;
     }
 
     //특정 유저의 포인트를 사용하는 기능
     public UserPoint usePoint(long id, long amount) {
+        //차감 금액 계산
         long balance = userPointTable.selectById(id).point() - amount;
-        UserPoint user = userPointTable.insertOrUpdate(id,balance);
-        pointHistoryTable.insert(id, amount, TransactionType.USE, user.updateMillis());
-        return userPointTable.selectById(id);
+        //사용자 포인트 update
+        UserPoint userPoint = userPointTable.insertOrUpdate(id,balance);
+        //사용자기록 insert
+        pointHistoryTable.insert(id, amount, TransactionType.USE, userPoint.updateMillis());
+        return userPoint;
     }
 }
