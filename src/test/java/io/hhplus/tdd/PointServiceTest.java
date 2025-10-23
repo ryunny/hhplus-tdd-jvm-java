@@ -267,7 +267,7 @@ public class PointServiceTest {
         //when & then
         assertThatThrownBy(()-> pointService.usePoint(userId, useAmount))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("포인트 충전 최소금액은 1 이상이여야 합니다.");
+                .hasMessageContaining("포인트 사용 금액이 잔액보다 큽니다.");
     }
 
     @Test
