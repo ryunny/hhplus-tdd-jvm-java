@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -56,7 +57,31 @@ public class PointServiceTest {
     }
 
     @Test
-    @DisplayName("포인트 충전 - 특정 유저의 포인트를 충전한다")
+    @DisplayName("포인트조회 예외케이스 - 음수 ID")
+    void getUserPoint_Minus_ID(){
+        // Given
+        long invalidId = -1L;
+
+        //when & then
+        assertThatThrownBy(()-> pointService.getUserPoint(invalidId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("유효하지 않은 사용자 ID 입니다.");
+
+    }
+    @Test
+    @DisplayName("포인트조회 예외케이스 - 0 ID")
+    void getUserPoint_Zero_ID(){
+        // Given
+        long invalidId = 0L;
+
+        //when & then
+        assertThatThrownBy(()-> pointService.getUserPoint(invalidId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("유효하지 않은 사용자 ID 입니다.");
+    }
+
+    @Test
+    @DisplayName("포인트충전 - 특정 유저의 포인트를 충전한다")
     void chargePoint_정상충전() {
         // Given
         long userId = 1L;
@@ -83,7 +108,34 @@ public class PointServiceTest {
     }
 
     @Test
-    @DisplayName("포인트 사용 - 특정 유저의 포인트를 사용한다")
+    @DisplayName("포인트충전 예외케이스 - 음수 ID")
+    void chargePoint_Minus_ID(){
+        // Given
+        long invalidId = -1L;
+        long amount = 500L;
+
+        //when & then
+        assertThatThrownBy(()-> pointService.chargePoint(invalidId,amount))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("유효하지 않은 사용자 ID 입니다.");
+
+    }
+
+    @Test
+    @DisplayName("포인트충전 예외케이스 - 0 ID")
+    void chargePoint_Zero_ID(){
+        // Given
+        long invalidId = 0L;
+        long amount = 500L;
+
+        //when & then
+        assertThatThrownBy(()-> pointService.chargePoint(invalidId,amount))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("유효하지 않은 사용자 ID 입니다.");
+    }
+
+    @Test
+    @DisplayName("포인트사용 - 특정 유저의 포인트를 사용한다")
     void usePoint_정상사용() {
         // Given
         long userId = 1L;
@@ -110,7 +162,34 @@ public class PointServiceTest {
     }
 
     @Test
-    @DisplayName("포인트 내역 조회 - 특정 유저의 포인트 충전/사용 내역을 조회한다")
+    @DisplayName("포인트사용 예외케이스 - 음수 ID")
+    void usePoint_Minus_ID(){
+        // Given
+        long invalidId = -1L;
+        long useAmonunt = 600L;
+
+        //when & then
+        assertThatThrownBy(()-> pointService.usePoint(invalidId, useAmonunt))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("유효하지 않은 사용자 ID 입니다.");
+
+    }
+
+    @Test
+    @DisplayName("포인트사용 예외케이스 - 0 ID")
+    void usePoint_Zero_ID(){
+        // Given
+        long invalidId = 0L;
+        long useAmonunt = 600L;
+
+        //when & then
+        assertThatThrownBy(()-> pointService.usePoint(invalidId, useAmonunt))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("유효하지 않은 사용자 ID 입니다.");
+    }
+
+    @Test
+    @DisplayName("포인트내역조회 - 특정 유저의 포인트 충전/사용 내역을 조회한다")
     void getUserHistories_정상조회() {
         // Given
         long userId = 1L;
@@ -132,6 +211,31 @@ public class PointServiceTest {
         assertThat(result.get(0).type()).isEqualTo(TransactionType.CHARGE);
         assertThat(result.get(1).type()).isEqualTo(TransactionType.USE);
         verify(pointHistoryTable, times(1)).selectAllByUserId(userId);
+    }
+
+    @Test
+    @DisplayName("포인트내역조회 예외케이스 - 음수 ID")
+    void getUserHistories__Minus_ID(){
+        // Given
+        long invalidId = -1L;
+
+        //when & then
+        assertThatThrownBy(()-> pointService.getUserHistories(invalidId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("유효하지 않은 사용자 ID 입니다.");
+
+    }
+
+    @Test
+    @DisplayName("포인트내역조회 예외케이스 - 0 ID")
+    void getUserHistories__Zero_ID(){
+        // Given
+        long invalidId = 0L;
+
+        //when & then
+        assertThatThrownBy(()-> pointService.getUserHistories(invalidId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("유효하지 않은 사용자 ID 입니다.");
     }
 
 }
