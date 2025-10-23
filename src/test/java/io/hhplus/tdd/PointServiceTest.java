@@ -21,7 +21,7 @@ import static org.mockito.Mockito.*;
 
 public class PointServiceTest {
     //포인트 최대값
-    private static final long POINT_MAX = 10000L;
+    private static final long POINT_MAX = 1000000L;
     //포인트 최소값
     private static final long POINT_MIN = 1L;
 
@@ -117,8 +117,8 @@ public class PointServiceTest {
     void chargePoint_Sum_Max_value_over() {
         // Given
         long userId = 1L;
-        long currentPoint = 90000L;
-        long chargeAmount = 20000L;  // 90000 + 20000 = 110000 > 100000
+        long currentPoint = 900000L;
+        long chargeAmount = 200000L;  // 900000 + 200000 = 1100000 > 1000000
         long currentTime = System.currentTimeMillis();
 
         UserPoint currentUserPoint = new UserPoint(userId, currentPoint, currentTime);
@@ -127,7 +127,7 @@ public class PointServiceTest {
         // When & Then
         assertThatThrownBy(() -> pointService.chargePoint(userId, chargeAmount))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("포인트 최대값을 초과했습니다.");  // "최대 포인트" 또는 "최대값" 포함
+                .hasMessageContaining("포인트 최대금액");
     }
 
     @Test
@@ -215,6 +215,7 @@ public class PointServiceTest {
     @Test
     @DisplayName("포인트사용 예외케이스 - 0 ID")
     void usePoint_Zero_ID(){
+
         // Given
         long invalidId = 0L;
         long useAmonunt = 600L;
@@ -223,6 +224,50 @@ public class PointServiceTest {
         assertThatThrownBy(()-> pointService.usePoint(invalidId, useAmonunt))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("유효하지 않은 사용자 ID 입니다.");
+    }
+
+    @Test
+    @DisplayName("포인트사용 예외케이스 - 음수 금액 사용")
+    void usePoint_Negative_Amount(){
+        // Given
+        long userId = 1L;
+        long negativeAmount = -500L;
+
+        //when & then
+        assertThatThrownBy(()-> pointService.usePoint(userId, negativeAmount))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("포인트 충전 최소금액은 1 이상이여야 합니다.");
+    }
+
+    @Test
+    @DisplayName("포인트사용 예외케이스 - 0원 사용")
+    void usePoint_Zero_Amount(){
+        // Given
+        long userId = 1L;
+        long zeroAmount = 0L;
+
+        //when & then
+        assertThatThrownBy(()-> pointService.usePoint(userId, zeroAmount))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("포인트 충전 최소금액은 1 이상이여야 합니다.");
+    }
+
+    @Test
+    @DisplayName("포인트사용 예외케이스 - 잔고 부족")
+    void usePoint_Insufficient_Balance(){
+        // Given
+        long userId = 1L;
+        long currentPoint = 500L;
+        long useAmount = 1000L;
+        long currentTime = System.currentTimeMillis();
+
+        UserPoint currentUserPoint = new UserPoint(userId, currentPoint, currentTime);
+        when(userPointTable.selectById(userId)).thenReturn(currentUserPoint);
+
+        //when & then
+        assertThatThrownBy(()-> pointService.usePoint(userId, useAmount))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("포인트 충전 최소금액은 1 이상이여야 합니다.");
     }
 
     @Test
